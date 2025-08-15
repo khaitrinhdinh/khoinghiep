@@ -38,7 +38,7 @@ export default function TicketLandingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         // nếu dính CORS:
-        // mode: "no-cors",
+        mode: "no-cors",
       });
       setSubmitted(true);
       setEmail("");
