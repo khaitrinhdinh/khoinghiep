@@ -82,7 +82,7 @@ export default function TicketLandingPage() {
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_0%,rgba(120,120,255,0.25),rgba(0,0,0,0))]"/>
-        <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
+        <div className="w-full px-8 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
           <div>
             <span className="inline-block text-xs uppercase tracking-widest text-white/60 mb-3">Sàn bán vé trực tuyến</span>
             <h1 className="text-3xl md:text-5xl font-semibold leading-tight">Bán & mua vé sự kiện <span className="text-white/80">nhanh gọn</span>, thanh toán <span className="text-white/80">an toàn</span>.</h1>
