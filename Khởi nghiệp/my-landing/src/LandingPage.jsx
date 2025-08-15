@@ -25,11 +25,7 @@ export default function TicketLandingPage() {
     const payload = {
       email,
       org: e.target.org.value,
-      phone: e.target.phone.value,
-      ...utm,
-      referrer: document.referrer || "",
-      path: window.location.pathname + window.location.search,
-      userAgent: navigator.userAgent,
+      phone: e.target.phone.value
     };
 
     try {
