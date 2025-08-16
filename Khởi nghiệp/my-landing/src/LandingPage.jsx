@@ -1,10 +1,97 @@
-import { useState } from "react";
-import { Calendar, Ticket, CreditCard, Shield, Globe, Star, CheckCircle2, Mail, Phone, ArrowRight, PlayCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, Ticket, CreditCard, Shield, Globe, Star, CheckCircle2, Mail, Phone, ArrowRight, PlayCircle, Search, X, MapPin, Clock, Users, Tag } from "lucide-react";
+import eventsData from "./data/events.json";
 
 export default function TicketLandingPage() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [filteredEvents, setFilteredEvents] = useState(eventsData.events);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showCategoryEvents, setShowCategoryEvents] = useState(false);
+  const [ticketForm, setTicketForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    quantity: 1
+  });
+
+  // Filter events based on search and category
+  useEffect(() => {
+    let filtered = eventsData.events;
+    
+    if (searchQuery) {
+      filtered = filtered.filter(event => 
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        event.organizer.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    if (selectedCategory) {
+      filtered = filtered.filter(event => event.category === selectedCategory);
+    }
+    
+    setFilteredEvents(filtered);
+  }, [searchQuery, selectedCategory]);
+
+  const formatPrice = (price) => {
+    if (price === 0) return "Miễn phí";
+    return new Intl.NumberFormat('vi-VN').format(price) + "đ";
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const handleBuyTicket = (event) => {
+    setSelectedEvent(event);
+    setShowModal(true);
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    setSelectedCategory(categoryName);
+    setShowCategoryEvents(true);
+  };
+
+  const handleTicketSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      eventId: selectedEvent.id,
+      fullName: ticketForm.fullName,
+      email: ticketForm.email,
+      org: ticketForm.org || "",
+      phone: ticketForm.phone,
+      quantity: ticketForm.quantity,
+    };
+    try {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxgzKb9suy_x7c8_zia3l6KIHkv1BoY4AlEvlzxajO-deDaoYSN-SdmEpXZIl53OkAb/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        mode: "no-cors",
+      });
+      setSubmitted(true);
+      setEmail("");
+    } catch (err) {
+      console.error(err);
+      alert("Gửi không thành công, thử lại giúp mình!");
+    } finally {
+      setSubmitting(false);
+    }
+    alert(`Đặt vé thành công cho sự kiện: ${selectedEvent.title}\nSố lượng: ${ticketForm.quantity}\nTổng tiền: ${formatPrice(selectedEvent.price * ticketForm.quantity)}`);
+    setShowModal(false);
+    setTicketForm({ fullName: "", email: "", phone: "", quantity: 1 });
+  };
 
   const getUTM = () => {
     const p = new URLSearchParams(window.location.search);
@@ -22,18 +109,20 @@ export default function TicketLandingPage() {
     setSubmitting(true);
 
     const utm = getUTM();
+    
     const payload = {
-      email,
+      eventId: null,
+      quantity: ticketForm.quantity,
+      email: email,
       org: e.target.org.value,
-      phone: e.target.phone.value
+      phone: e.target.phone.value,
     };
 
     try {
-      const res = await fetch("https://script.google.com/macros/s/AKfycbybKnirwtF1atd5Smjc2w03qdS4fuPBD2TV-2K3S_mlAceQLZ5fUbHdqZpd4E9BlGVf/exec", {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxgzKb9suy_x7c8_zia3l6KIHkv1BoY4AlEvlzxajO-deDaoYSN-SdmEpXZIl53OkAb/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        // nếu dính CORS:
         mode: "no-cors",
       });
       setSubmitted(true);
@@ -46,12 +135,8 @@ export default function TicketLandingPage() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
-      {/* --- SEO / Tracking placeholders --- */}
-      {/* <script> Add GA / PostHog / Clarity here </script> */}
-
       {/* NAVBAR */}
       <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 border-b border-neutral-800/60">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -86,8 +171,21 @@ export default function TicketLandingPage() {
 
             {/* SEARCH */}
             <div className="mt-8 grid sm:grid-cols-3 gap-3">
-              <input className="sm:col-span-2 w-full rounded-2xl bg-neutral-900 border border-neutral-800 px-4 py-3 outline-none focus:border-neutral-600" placeholder="Tìm sự kiện: EDM, hội thảo, workshop…"/>
-              <button className="rounded-2xl px-5 py-3 bg-white text-neutral-900 font-medium hover:bg-white/90">Tìm vé</button>
+              <div className="sm:col-span-2 relative">
+                <Search className="absolute left-3 top-3 h-5 w-5 text-neutral-400" />
+                <input 
+                  className="w-full rounded-2xl bg-neutral-900 border border-neutral-800 pl-10 pr-4 py-3 outline-none focus:border-neutral-600" 
+                  placeholder="Tìm sự kiện: EDM, hội thảo, workshop…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button 
+                className="rounded-2xl px-5 py-3 bg-white text-neutral-900 font-medium hover:bg-white/90"
+                onClick={() => setShowCategoryEvents(true)}
+              >
+                Tìm vé
+              </button>
             </div>
 
             {/* TRUST */}
@@ -107,45 +205,25 @@ export default function TicketLandingPage() {
           <div className="relative">
             <div className="absolute -inset-6 bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/10 blur-3xl rounded-[2rem]"/>
             <div className="relative grid gap-4">
-              <div className="rounded-2xl bg-neutral-900/70 border border-neutral-800 p-5 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5"/>
-                  <div>
-                    <p className="text-sm text-white/70">Workshop • 20/08</p>
-                    <p className="font-medium">GenAI for Beginners</p>
+              {eventsData.events.slice(0, 3).map((event, index) => (
+                <div key={event.id} className="rounded-2xl bg-neutral-900/70 border border-neutral-800 p-5 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5"/>
+                    <div>
+                      <p className="text-sm text-white/70">{event.category} • {formatDate(event.date)}</p>
+                      <p className="font-medium">{event.title}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-white/70">{formatPrice(event.price)}</span>
+                    <button 
+                      onClick={() => handleBuyTicket(event)}
+                      className="rounded-lg px-3 py-2 bg-white text-neutral-900 text-sm font-medium">
+                      {event.price === 0 ? "Đăng ký" : "Mua vé"}
+                    </button>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-white/70">Từ 199.000đ</span>
-                  <button className="rounded-lg px-3 py-2 bg-white text-neutral-900 text-sm font-medium">Mua vé</button>
-                </div>
-              </div>
-              <div className="rounded-2xl bg-neutral-900/70 border border-neutral-800 p-5 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5"/>
-                  <div>
-                    <p className="text-sm text-white/70">Concert • 24/08</p>
-                    <p className="font-medium">Summer EDM Night</p>
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-white/70">Từ 399.000đ</span>
-                  <button className="rounded-lg px-3 py-2 bg-white text-neutral-900 text-sm font-medium">Mua vé</button>
-                </div>
-              </div>
-              <div className="rounded-2xl bg-neutral-900/70 border border-neutral-800 p-5 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5"/>
-                  <div>
-                    <p className="text-sm text-white/70">Talk • 31/08</p>
-                    <p className="font-medium">Tech Leaders Meetup</p>
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-white/70">Miễn phí</span>
-                  <button className="rounded-lg px-3 py-2 bg-white text-neutral-900 text-sm font-medium">Đăng ký</button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -188,19 +266,32 @@ export default function TicketLandingPage() {
       <section id="su-kien" className="max-w-7xl mx-auto px-4 py-12">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <h2 className="text-xl md:text-2xl font-semibold">Danh mục nổi bật</h2>
-          <a href="#" className="text-sm text-white/70 hover:text-white">Xem tất cả →</a>
+          <button 
+            onClick={() => {setSelectedCategory(""); setShowCategoryEvents(true);}}
+            className="text-sm text-white/70 hover:text-white">
+            Xem tất cả →
+          </button>
         </div>
         <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {["Âm nhạc", "Hội thảo", "Thể thao", "Ưu đãi sớm"].map((c, i) => (
-            <div key={i} className="group rounded-2xl overflow-hidden border border-neutral-800 bg-[linear-gradient(135deg,#0b0b0b,#161616)]">
-              <div className="aspect-video bg-neutral-800/50 grid place-content-center text-white/50 group-hover:text-white/80 transition">
-                <Calendar className="h-8 w-8"/>
+          {eventsData.categories.map((category, i) => (
+            <button
+              key={i}
+              onClick={() => handleCategoryClick(category.name)}
+              className="group rounded-2xl overflow-hidden border border-neutral-800 bg-[linear-gradient(135deg,#0b0b0b,#161616)] hover:border-neutral-600 transition-all"
+            >
+              <div className={`aspect-video bg-gradient-to-br ${category.color} opacity-20 group-hover:opacity-30 transition grid place-content-center text-4xl`}>
+                {category.icon}
               </div>
               <div className="p-4 flex items-center justify-between">
-                <span className="font-medium">{c}</span>
-                <ArrowRight className="h-4 w-4 text-white/50"/>
+                <div className="text-left">
+                  <div className="font-medium">{category.name}</div>
+                  <div className="text-xs text-white/60 mt-1">
+                    {eventsData.events.filter(e => e.category === category.name).length} sự kiện
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/50 group-hover:text-white/80 transition"/>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -266,7 +357,7 @@ export default function TicketLandingPage() {
             {q: "Giảm 40% thời gian soát vé.", a: "QR một chạm, giảm tắc nghẽn cổng vào.", n: "Hội thảo Tech"},
           ].map((t, i) => (
             <figure key={i} className="rounded-2xl bg-neutral-900/60 border border-neutral-800 p-6">
-              <blockquote className="text-lg">“{t.q}”</blockquote>
+              <blockquote className="text-lg">"{t.q}"</blockquote>
               <figcaption className="mt-2 text-white/70 text-sm">{t.a} — <span className="text-white/80">{t.n}</span></figcaption>
             </figure>
           ))}
@@ -381,6 +472,229 @@ export default function TicketLandingPage() {
         </div>
         <div className="text-center text-xs text-white/40 pb-8">© {new Date().getFullYear()} VéNhanh. All rights reserved.</div>
       </footer>
+
+      {/* TICKET PURCHASE MODAL */}
+      {showModal && selectedEvent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold">{selectedEvent.title}</h3>
+                  <p className="text-neutral-400 text-sm mt-1">{selectedEvent.organizer}</p>
+                </div>
+                <button 
+                  onClick={() => setShowModal(false)}
+                  className="p-2 hover:bg-neutral-800 rounded-lg transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-2 text-sm text-neutral-300">
+                  <Calendar className="h-4 w-4" />
+                  {formatDate(selectedEvent.date)} • {selectedEvent.time}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-neutral-300">
+                  <MapPin className="h-4 w-4" />
+                  {selectedEvent.location}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-neutral-300">
+                  <Users className="h-4 w-4" />
+                  Còn {selectedEvent.availableTickets} vé
+                </div>
+                <div className="flex items-center gap-2 text-lg font-semibold">
+                  <Tag className="h-5 w-5" />
+                  {formatPrice(selectedEvent.price)}
+                  {selectedEvent.originalPrice > selectedEvent.price && (
+                    <span className="text-sm line-through text-neutral-500">
+                      {formatPrice(selectedEvent.originalPrice)}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <form onSubmit={handleTicketSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Họ và tên</label>
+                  <input
+                    type="text"
+                    required
+                    value={ticketForm.fullName}
+                    onChange={(e) => setTicketForm({...ticketForm, fullName: e.target.value})}
+                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-neutral-500"
+                    placeholder="Nguyễn Văn A"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={ticketForm.email}
+                    onChange={(e) => setTicketForm({...ticketForm, email: e.target.value})}
+                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-neutral-500"
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Số điện thoại</label>
+                  <input
+                    type="tel"
+                    required
+                    value={ticketForm.phone}
+                    onChange={(e) => setTicketForm({...ticketForm, phone: e.target.value})}
+                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-neutral-500"
+                    placeholder="0901234567"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Số lượng vé</label>
+                  <select
+                    value={ticketForm.quantity}
+                    onChange={(e) => setTicketForm({...ticketForm, quantity: parseInt(e.target.value)})}
+                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-neutral-500"
+                  >
+                    {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                      <option key={num} value={num}>{num} vé</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="border-t border-neutral-700 pt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span>Tổng cộng:</span>
+                    <span className="text-xl font-semibold">
+                      {formatPrice(selectedEvent.price * ticketForm.quantity)}
+                    </span>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-white text-neutral-900 font-medium py-3 rounded-xl hover:bg-neutral-100 transition"
+                  >
+                    {selectedEvent.price === 0 ? "Đăng ký miễn phí" : "Thanh toán"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EVENTS LISTING MODAL */}
+      {showCategoryEvents && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-semibold">
+                    {selectedCategory ? `Sự kiện ${selectedCategory}` : "Tất cả sự kiện"}
+                  </h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    {filteredEvents.length} sự kiện được tìm thấy
+                  </p>
+                </div>
+                <button 
+                  onClick={() => {setShowCategoryEvents(false); setSelectedCategory(""); setSearchQuery("");}}
+                  className="p-2 hover:bg-neutral-800 rounded-lg transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Search and filter */}
+              <div className="mb-6 space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-5 w-5 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm sự kiện..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-neutral-500"
+                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => setSelectedCategory("")}
+                    className={`px-3 py-1 rounded-full text-sm transition ${!selectedCategory ? 'bg-white text-neutral-900' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'}`}
+                  >
+                    Tất cả
+                  </button>
+                  {eventsData.categories.map(cat => (
+                    <button
+                      key={cat.name}
+                      onClick={() => setSelectedCategory(cat.name)}
+                      className={`px-3 py-1 rounded-full text-sm transition ${selectedCategory === cat.name ? 'bg-white text-neutral-900' : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'}`}
+                    >
+                      {cat.icon} {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Events grid */}
+              <div className="grid md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                {filteredEvents.map(event => (
+                  <div key={event.id} className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-medium">{event.title}</h4>
+                        <p className="text-sm text-neutral-400">{event.organizer}</p>
+                      </div>
+                      <span className="text-xs bg-neutral-700 px-2 py-1 rounded">{event.category}</span>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm text-neutral-300 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        {formatDate(event.date)} • {event.time}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        {event.location}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Còn {event.availableTickets} vé
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold">{formatPrice(event.price)}</span>
+                        {event.originalPrice > event.price && (
+                          <span className="text-sm line-through text-neutral-500 ml-2">
+                            {formatPrice(event.originalPrice)}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowCategoryEvents(false);
+                          handleBuyTicket(event);
+                        }}
+                        className="bg-white text-neutral-900 px-4 py-2 rounded-lg font-medium hover:bg-neutral-100 transition"
+                      >
+                        {event.price === 0 ? "Đăng ký" : "Mua vé"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {filteredEvents.length === 0 && (
+                <div className="text-center py-8 text-neutral-400">
+                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Không tìm thấy sự kiện nào phù hợp</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,159 @@
+{
+  "events": [
+    {
+      "id": 1,
+      "title": "GenAI for Beginners",
+      "category": "Hội thảo",
+      "date": "2024-08-20",
+      "time": "14:00",
+      "location": "Hội trường A, Quận 1, TP.HCM",
+      "description": "Workshop về AI tạo sinh dành cho người mới bắt đầu",
+      "price": 199000,
+      "originalPrice": 299000,
+      "availableTickets": 150,
+      "totalTickets": 200,
+      "image": "/images/genai-workshop.jpg",
+      "organizer": "TechHub Saigon",
+      "tags": ["AI", "Workshop", "Tech", "Beginner"]
+    },
+    {
+      "id": 2,
+      "title": "Summer EDM Night",
+      "category": "Âm nhạc",
+      "date": "2024-08-24",
+      "time": "20:00",
+      "location": "Diamond Plaza, Quận 1, TP.HCM",
+      "description": "Đêm nhạc điện tử mùa hè với các DJ hàng đầu",
+      "price": 399000,
+      "originalPrice": 499000,
+      "availableTickets": 89,
+      "totalTickets": 500,
+      "image": "/images/edm-night.jpg",
+      "organizer": "EDM Saigon",
+      "tags": ["EDM", "Music", "Party", "DJ"]
+    },
+    {
+      "id": 3,
+      "title": "Tech Leaders Meetup",
+      "category": "Hội thảo",
+      "date": "2024-08-31",
+      "time": "15:00",
+      "location": "Landmark 81, Quận Bình Thạnh, TP.HCM",
+      "description": "Gặp gỡ và học hỏi từ các lãnh đạo công nghệ hàng đầu",
+      "price": 0,
+      "originalPrice": 0,
+      "availableTickets": 200,
+      "totalTickets": 200,
+      "image": "/images/tech-leaders.jpg",
+      "organizer": "Startup Vietnam",
+      "tags": ["Tech", "Leadership", "Networking", "Free"]
+    },
+    {
+      "id": 4,
+      "title": "Football Championship Finals",
+      "category": "Thể thao",
+      "date": "2024-09-05",
+      "time": "19:30",
+      "location": "Sân vận động Mỹ Đình, Hà Nội",
+      "description": "Trận chung kết giải bóng đá vô địch quốc gia",
+      "price": 150000,
+      "originalPrice": 200000,
+      "availableTickets": 5000,
+      "totalTickets": 40000,
+      "image": "/images/football-finals.jpg",
+      "organizer": "VFF",
+      "tags": ["Football", "Sports", "Championship", "Finals"]
+    },
+    {
+      "id": 5,
+      "title": "Early Bird Startup Conference",
+      "category": "Ưu đãi sớm",
+      "date": "2024-09-15",
+      "time": "08:00",
+      "location": "HCMC Convention Center, TP.HCM",
+      "description": "Hội nghị khởi nghiệp lớn nhất năm với ưu đãi đặc biệt",
+      "price": 99000,
+      "originalPrice": 299000,
+      "availableTickets": 800,
+      "totalTickets": 1000,
+      "image": "/images/startup-conf.jpg",
+      "organizer": "Startup Ecosystem",
+      "tags": ["Startup", "Business", "Early Bird", "Conference"],
+      "earlyBird": true
+    },
+    {
+      "id": 6,
+      "title": "Jazz Night Under Stars",
+      "category": "Âm nhạc",
+      "date": "2024-09-10",
+      "time": "19:00",
+      "location": "Thảo Điền, Quận 2, TP.HCM",
+      "description": "Đêm nhạc Jazz ngoài trời với view sông Sài Gòn",
+      "price": 250000,
+      "originalPrice": 350000,
+      "availableTickets": 120,
+      "totalTickets": 150,
+      "image": "/images/jazz-night.jpg",
+      "organizer": "Saigon Jazz Club",
+      "tags": ["Jazz", "Music", "Outdoor", "Romantic"]
+    },
+    {
+      "id": 7,
+      "title": "Marathon Saigon 2024",
+      "category": "Thể thao",
+      "date": "2024-09-20",
+      "time": "05:00",
+      "location": "Công viên Lê Văn Tám, TP.HCM",
+      "description": "Giải chạy marathon quốc tế tại TP.HCM",
+      "price": 500000,
+      "originalPrice": 600000,
+      "availableTickets": 2000,
+      "totalTickets": 3000,
+      "image": "/images/marathon.jpg",
+      "organizer": "Saigon Runners",
+      "tags": ["Marathon", "Running", "Sports", "Health"]
+    },
+    {
+      "id": 8,
+      "title": "Digital Marketing Masterclass",
+      "category": "Hội thảo",
+      "date": "2024-09-25",
+      "time": "09:00",
+      "location": "Bitexco Tower, Quận 1, TP.HCM",
+      "description": "Khóa học chuyên sâu về marketing kỹ thuật số",
+      "price": 899000,
+      "originalPrice": 1199000,
+      "availableTickets": 80,
+      "totalTickets": 100,
+      "image": "/images/digital-marketing.jpg",
+      "organizer": "Marketing Academy",
+      "tags": ["Marketing", "Digital", "Business", "Masterclass"]
+    }
+  ],
+  "categories": [
+    {
+      "name": "Âm nhạc",
+      "icon": "🎵",
+      "description": "Concerts, shows và các sự kiện âm nhạc",
+      "color": "from-purple-500 to-pink-500"
+    },
+    {
+      "name": "Hội thảo",
+      "icon": "🎯",
+      "description": "Workshops, seminars và các buổi đào tạo",
+      "color": "from-blue-500 to-cyan-500"
+    },
+    {
+      "name": "Thể thao",
+      "icon": "⚽",
+      "description": "Các giải đấu và sự kiện thể thao",
+      "color": "from-green-500 to-emerald-500"
+    },
+    {
+      "name": "Ưu đãi sớm",
+      "icon": "🔥",
+      "description": "Sự kiện có giá ưu đãi đặc biệt",
+      "color": "from-orange-500 to-red-500"
+    }
+  ]
+}
